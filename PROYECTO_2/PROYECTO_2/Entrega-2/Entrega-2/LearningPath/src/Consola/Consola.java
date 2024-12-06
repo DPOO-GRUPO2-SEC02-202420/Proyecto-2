@@ -3,9 +3,13 @@ import java.io.BufferedWriter;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.InputMismatchException;
 import java.util.List;
+import java.util.Map;
 import java.util.Scanner;
+import java.util.stream.Collectors;
+
 import Lógica.*;
 import Persistencia.*;
 import java.text.SimpleDateFormat;
@@ -255,6 +259,8 @@ public class Consola {
         learningPaths.add(nuevoPath);
         
         System.out.println("Learning Path creado exitosamente.");
+        // Guardar en el CSV
+        guardarLearningPaths();
     }
 
     // Aca se realiza este metodo para que el profesor pueda agregar o borrar el Learning Path
@@ -832,8 +838,8 @@ public static void guardarUsuariosCSV() throws IOException {
 }
 
 //Carga los usuarios (muy importante porque después no encuentra usuarios)
-public static void cargarUsuarios() {
-	
+public static int cargarUsuarios() {
+	int usuariosCargados = 0;
     try {
     	
         List<String[]> datos = ArchivoCSV.leerCSV("usuarios.csv");
@@ -865,6 +871,7 @@ public static void cargarUsuarios() {
                 }
                 
                 usuarios.add(nuevoUsuario);
+                usuariosCargados++;
             }
         }
         System.out.println("Usuarios cargados desde el archivo CSV.");
@@ -873,6 +880,7 @@ public static void cargarUsuarios() {
     	
         System.out.println("Error al cargar usuarios: " + e.getMessage());
     }
+    return usuariosCargados;
 }
 
 //Para que el profesor agruegue su feedback
@@ -946,7 +954,7 @@ public static void agregarFeedbackActividad() {
 
 //Para asignar un prerrequisito pero es mejor en base al titulo de la actividad
 
-public static void asignarPrerrequisito(Actividad actividad, LearningPath learningPath) {
+public static void asignarPrerrequisito(Actividad actividad, LearningPath learningPath, String string) {
 	
     System.out.println("Actividades actuales en el Learning Path:");
     
@@ -994,6 +1002,9 @@ public static void verFeedbacksEstudiante() {
     }
 }
 
+public static List<Usuario> getUsers() {
+    return usuarios;
+}
 
 // ES EL RATING DE ESTUDIANTE SOLO ESTUDIANTE
 public static void dejarRatingEstudiante() {
@@ -1028,5 +1039,29 @@ public static void dejarRatingEstudiante() {
     } else {
         System.out.println("Learning Path no encontrado.");
     }
+}
+public static List<LearningPath> getLearningPaths() {
+    return learningPaths;
+}
+
+public static Map<String, Integer> obtenerActividadesRealizadasPorDia() {
+    Map<String, Integer> actividadesPorDia = new HashMap<>();
+
+    for (LearningPath lp : learningPaths) { // Iterar sobre los estudiantes
+        for (Actividad actividad : lp.getActividades()) {
+            String fecha = lp.obtenerFechaCompletada(actividad); // Obtener la fecha de finalización
+            actividadesPorDia.put(fecha, actividadesPorDia.getOrDefault(fecha, 0) + 1);
+        }
+    }
+
+    return actividadesPorDia;
+}
+
+public static List<Estudiante> getEstudiantes() {
+    // Filtrar usuarios para devolver solo los estudiantes
+    return usuarios.stream()
+        .filter(u -> u instanceof Estudiante) // Asegúrate de que 'usuarios' contiene objetos Usuario
+        .map(u -> (Estudiante) u) // Convertir de Usuario a Estudiante
+        .collect(Collectors.toList());
 }
 }

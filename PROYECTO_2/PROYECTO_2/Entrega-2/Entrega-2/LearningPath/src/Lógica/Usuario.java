@@ -1,4 +1,7 @@
 package Lógica;
+import java.io.BufferedWriter;
+import java.io.FileWriter;
+import java.io.IOException;
 import java.io.Serializable;
 public abstract class Usuario implements Serializable {
 	
@@ -20,7 +23,7 @@ public Usuario(String user, String password, String correo) {
 }
 
 
-public String getUser() {
+public String getUser() {	
 	return user;
 }
 
@@ -54,5 +57,20 @@ public boolean autenticar(String correo, String contraseña) {
     
     return this.correo.equals(correo) && this.password.equals(contraseña);
 }
+
+// Método para guardar este usuario en un archivo CSV
+    public void guardarEnCSV() throws IOException {
+        String archivo = "usuarios.csv";
+        try (BufferedWriter writer = new BufferedWriter(new FileWriter(archivo, true))) { // Append: true
+            if (this instanceof Estudiante) {
+                writer.write("Estudiante," + user + "," + correo + "," + password);
+            } else if (this instanceof Profesor) {
+                writer.write("Profesor," + user + "," + correo + "," + password);
+            } else {
+                writer.write("Usuario," + user + "," + correo + "," + password);
+            }
+            writer.newLine();
+        }
+    }
 }
 

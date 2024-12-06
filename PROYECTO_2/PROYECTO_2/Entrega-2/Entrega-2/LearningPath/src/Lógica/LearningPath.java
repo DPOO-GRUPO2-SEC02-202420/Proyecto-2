@@ -2,13 +2,18 @@ package Lógica;
 import java.util.ArrayList;
 import Persistencia.PersistenciaSerializable;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import Interfaz.Feedback;
 import java.io.Serializable;
+import java.text.SimpleDateFormat;
 
 public class LearningPath implements Serializable {
 //Atributos segun el UML
+    private Map<Actividad, String> fechasCompletadas = new HashMap<>();
+
 	private String titulo;
 	
 	private String descripcion;
@@ -338,5 +343,35 @@ public class LearningPath implements Serializable {
 	    
 	    return lp;
 	}
+    public void registrarFechaCompletada(Actividad actividad) {
+    SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
+    String fechaCompletada = sdf.format(new Date());
+    actividad.setResultado(fechaCompletada); // Usamos el campo `resultado` para almacenar la fecha.
+}
+public Map<String, List<Actividad>> obtenerActividadesPorFecha() {
+    Map<String, List<Actividad>> actividadesPorFecha = new HashMap<>();
+    
+    for (Actividad actividad : actividades) {
+        String fecha = actividad.getResultado(); // Usamos `resultado` como la fecha de finalización.
+        
+        if (fecha != null && !fecha.isEmpty()) { // Solo considerar actividades que tienen fecha.
+            actividadesPorFecha
+                .computeIfAbsent(fecha, k -> new ArrayList<>())
+                .add(actividad);
+        }
+    }
+    
+    return actividadesPorFecha;
+}
+
+// Método para registrar una actividad como completada en una fecha
+public void registrarFechaCompletada(Actividad actividad, String fecha) {
+    fechasCompletadas.put(actividad, fecha);
+}
+
+// Método para obtener la fecha en la que se completó una actividad
+public String obtenerFechaCompletada(Actividad actividad) {
+    return fechasCompletadas.getOrDefault(actividad, "No completada");
+}
 	
 }
